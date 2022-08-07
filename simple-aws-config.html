@@ -1,0 +1,53 @@
+<script type="text/javascript">
+  RED.nodes.registerType('AWS Config',{
+    category: 'config',
+    defaults: {
+		name: {value:"AWS Config"},
+      region: { value: "us-east-1", required: true }
+    },
+    credentials: {
+      accessKey: {type:"text"},
+      secretKey: {type:"password"}
+    },
+    label: function() {
+      return this.name;
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="AWS Config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-region"><i class="fa fa-wrench"></i> Region</label>
+        <select id="node-config-input-region">
+          <option value="ap-northeast-1">ap-northeast-1</option>
+          <option value="ap-northeast-2">ap-northeast-2</option>
+          <option value="ap-northeast-3">ap-northeast-3</option>
+          <option value="ap-south-1">ap-south-1</option>
+          <option value="ap-southeast-1">ap-southeast-1</option>
+          <option value="ap-southeast-2">ap-southeast-2</option>
+          <option value="ca-central-1">ca-central-1</option>
+          <option value="eu-central-1">eu-central-1</option>
+          <option value="eu-north-1">eu-north-1</option>
+          <option value="eu-west-1">eu-west-1</option>
+          <option value="eu-west-2">eu-west-2</option>
+          <option value="eu-west-3">eu-west-3</option>
+          <option value="sa-east-1">sa-east-1</option>
+          <option value="us-east-1">us-east-1</option>
+          <option value="us-east-2">us-east-2</option>
+          <option value="us-west-1">us-west-1</option>
+          <option value="us-west-2">us-west-2</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-accessKey"><i class="icon-bookmark"></i> Access Id</label>
+        <input type="text" id="node-config-input-accessKey">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-secretKey"><i class="icon-bookmark"></i> Secret Key</label>
+        <input type="password" id="node-config-input-secretKey">
+    </div>
+</script>

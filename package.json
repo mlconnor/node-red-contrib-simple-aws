@@ -1,0 +1,43 @@
+{
+  "name": "node-red-contrib-simple-aws",
+  "version": "0.1.0",
+  "description": "A simple wrapper for all AWS services",
+  "dependencies": {
+    "aws-sdk": "^2.1189.0"
+  },
+  "license": "Apache",
+  "keywords": [
+    "node-red",
+    "aws",
+    "ec2",
+    "kinesis",
+    "lamdba",
+    "s3",
+    "sqs",
+    "sns",
+    "dynamodb",
+    "iot",
+    "es",
+    "ecs",
+    "polly",
+    "rekognition",
+    "firehose",
+    "tagging",
+    "rds",
+    "redshift"
+  ],
+  "node-red": {
+    "nodes": {
+      "Simple AWS": "simple-aws.js",
+      "AWS Config": "simple-aws-config.js"
+    }
+  },
+  "author": {
+    "name": "Michael Connor"
+  },
+  "maintainers": [
+    {
+      "name": "Michael Connor"
+    }
+  ]
+}
