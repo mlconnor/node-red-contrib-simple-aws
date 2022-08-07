@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk')
+const paginators = require('./paginators.json')
 
 module.exports = function(RED) {
     function SimpleAWSNode(config) {
@@ -30,7 +31,7 @@ module.exports = function(RED) {
         console.log("creating new AWS service " + config.service + " with params", serviceParams)
         let client = new AWS[config.service](serviceParams)
 
-
+        /* let's handle the payload parameter */
         let valid = true
         if ( config.parameterType === 'json' ) {
           try {
@@ -47,6 +48,12 @@ module.exports = function(RED) {
             this.error(RED._("change.errors.invalid-expr",{error:e.message}));
           }
         }
+
+        /* let's deal with the paginators here */
+        let paginatorsDef = paginators[config.service.toLowerCase() + '-' + config.apiVersion]
+        let paginatorDef = paginatorsDef ? paginatorsDef[config.operation] : null
+        //console.log("pagDefs", paginatorsDef, "pagDef", paginatorDef,"op", config.operation)
+        
 
         /*
         if (this.awsConfig.proxyRequired){
@@ -73,7 +80,7 @@ module.exports = function(RED) {
               throw "unexpected parameterType " + config.parameterType
           }
           node.status({ fill: "green", shape: "ring", text: "calling " + config.service + ":" + config.operation });
-          let combinedResponse = []
+          
           let operationParamCopy = { ... operationParam }
 
           try {
@@ -83,27 +90,16 @@ module.exports = function(RED) {
             while (!done) {
               var response = await client[config.operation](operationParamCopy).promise()
               //console.log("response", response)
-
-              if (config.nextContinuationToken) {
-                combinedResponse.push(response)
-                if (response[config.nextContinuationToken]) {
-                  operationParamCopy[config.continuationToken] = response[config.nextContinuationToken]
-                  combinedResponse.push(response)
-                  node.status({ fill: "green", shape: "ring", text: "chunk" });
-                } else {
-                  done = true
-                  msgCopy.complete = true
-                  msgCopy.payload = combinedResponse
-                  node.send(msgCopy)
-                  node.status({ fill: "green", shape: "ring", text: "done multi" });
-                  nodeDone()
-                }
+              msgCopy.payload = response
+              //console.log("paginator", paginatorDef)
+              if ( paginatorDef && response[paginatorDef.output_token]) {
+                operationParamCopy[paginatorDef.input_token] = response[paginatorDef.output_token]
+                msgCopy.complete = false
+                node.send(msgCopy)
               } else {
                 done = true
                 msgCopy.complete = true
-                msgCopy.payload = response
                 node.status({ fill: "green", shape: "ring", text: "done" });
-                console.log("sending message", msgCopy)
                 node.send(msgCopy)
                 nodeDone()
               }
