@@ -50,7 +50,7 @@ var sAndMeta = files.map(f => {
 })
 
 console.log("paginators: " + Object.keys(paginators).length)
-fs.writeFileSync('paginators.json', JSON.stringify(paginators))
+fs.writeFileSync('./resources/paginators.json', JSON.stringify(paginators))
 
 sAndMeta.sort((a,b) => { return a.serviceId < b.serviceId ? -1 : a.serviceId > b.serviceId ? 1 : 0})
 //console.log(JSON.stringify(sAndMeta))

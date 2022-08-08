@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk')
-const paginators = require('./paginators.json')
+const paginators = require('./resources/paginators.json')
 
 module.exports = function(RED) {
     function SimpleAWSNode(config) {
@@ -54,7 +54,6 @@ module.exports = function(RED) {
         let paginatorDef = paginatorsDef ? paginatorsDef[config.operation] : null
         //console.log("pagDefs", paginatorsDef, "pagDef", paginatorDef,"op", config.operation)
         
-
         /*
         if (this.awsConfig.proxyRequired){
             var proxy = require('proxy-agent');
@@ -68,7 +67,7 @@ module.exports = function(RED) {
           let operationParam = {}
           switch (config.parameterType) {
             case 'jsonata' :
-              operationParam = RED.util.evaluateNodeProperty(config.parameter, config.parameterType, node);
+              operationParam = RED.util.evaluateNodeProperty(config.parameter, config.parameterType, node, msg);
               break
             case 'msg':
               operationParam = RED.util.getMessageProperty(msg,config.parameter);
@@ -94,7 +93,7 @@ module.exports = function(RED) {
               //console.log("paginator", paginatorDef)
               if ( paginatorDef && response[paginatorDef.output_token]) {
                 operationParamCopy[paginatorDef.input_token] = response[paginatorDef.output_token]
-                msgCopy.complete = false
+                delete msgCopy.complete
                 node.send(msgCopy)
               } else {
                 done = true

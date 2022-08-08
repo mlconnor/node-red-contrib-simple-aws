@@ -74,6 +74,13 @@
           $("#node-input-parameter").typedInput({
             types:['msg','json','jsonata']
           }).typedInput('type',this.parameterType);
+
+          /* https://nodered.org/docs/creating-nodes/resources */
+          /*
+          $.getJSON('/resources/node-red-contrib-simple-aws/paginators.json',function(data) {
+            console.log("PAGE",data)
+          })
+          */
         },
         oneditsave: function() {
           
