@@ -3,7 +3,7 @@ const paginators = require('./resources/paginators.json')
 
 module.exports = function(RED) {
     function SimpleAWSNode(config) {
-        console.log("config", config)
+        //console.log("config", config)
         RED.nodes.createNode(this, config);
         var node = this;
 		    let awsConfig = RED.nodes.getNode(config.aws);
@@ -28,7 +28,7 @@ module.exports = function(RED) {
         if ( this.region ) {
           serviceParams.region = this.region
         }
-        console.log("creating new AWS service " + config.service + " with params", serviceParams)
+        //console.log("creating new AWS service " + config.service + " with params", serviceParams)
         let client = new AWS[config.service](serviceParams)
 
         /* let's handle the payload parameter */
