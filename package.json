@@ -33,11 +33,13 @@
     }
   },
   "author": {
-    "name": "Michael Connor"
+    "name": "Michael Connor",
+    "email": "mlconnornpm@gmail.com"
   },
   "maintainers": [
     {
-      "name": "Michael Connor"
+      "name": "Michael Connor",
+      "email":"mlconnornpm@gmail.com"
     }
   ]
 }
