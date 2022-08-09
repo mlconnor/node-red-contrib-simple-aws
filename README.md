@@ -18,19 +18,19 @@ You will then need to restart Node-RED for it to pick-up the new nodes.
 # Basic operation
 There is a single node for all AWS Services and it is available in the Function category of the palette, as shown below. Drag the simple aws node onto your flow.
 
-![Simple AWS on the palette](doc/palette.png)
+![Simple AWS on the palette](https://github.com/mlconnor/node-red-contrib-simple-aws/blob/master/doc/palette.png?raw=true)
 
 Once the node is in the flow it will look something like this.
 
-![Simple AWS Flow Screenshot](doc/screenshot.png)
+![Simple AWS Flow Screenshot](https://github.com/mlconnor/node-red-contrib-simple-aws/blob/master/doc/screenshot.png?raw=true)
 
 You can then configure the properties of the node the way you would with any other node.
 
-![Properties](doc/properties.png)
+![Properties](https://github.com/mlconnor/node-red-contrib-simple-aws/blob/master/doc/properties.png?raw=true)
 
 The **AWS Config** property gives you a way to configure your region and credentials as you can see below. Each instance of the node can have a different set of credentials and run in different regions so it gives you a lot of flexibility.
 
-![Config](doc/config.png)
+![Config](https://github.com/mlconnor/node-red-contrib-simple-aws/blob/master/doc/config.png?raw=true)
 
 The **Name** parameter is optional and gives you the ability to give it a more descriptive name. The label will default to the service and operation you choose and I find that the default label works best 95% of the time.
 
