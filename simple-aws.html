@@ -38,6 +38,10 @@
       $('#node-input-operation').html(sortedOperations.map(o => {
         return `<option value="${o}"${o == currentOperation ? ' selected' : ''}>${o}</option>`
       }))
+
+      let link = 'https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/' + state.service + '.html' + (state.operation ? `#${state.operation}-property` : '')
+      $('#docLink').attr('href', link)
+      $('#docLink').text('AWS Docs for ' + state.service + (state.operation ? ':' + state.operation : ''))
     }
 
     RED.nodes.registerType('simple-aws',{
@@ -46,6 +50,7 @@
         icon: 'aws.png',
         defaults: {
           aws: {type:"AWS Config",required:true},
+          name: {value:"",required:false},
           service: {value:"S3",required:true},
           operation: {value:"listObjectsV2", required:true},
           apiVersion: {value:"2006-03-01", required:true},
@@ -55,11 +60,14 @@
         inputs:1,
         outputs:1,
         label: function() {
-          if ( this.service && this.service ) {
-            return this.service + "." + this.operation
-          } else {
-            return "AWS Operation"
+          let label = "Simple AWS"
+          if ( this.name && this.name.trim().length > 0 ) {
+            label = this.name
+          } else if ( this.service && this.operation ) {
+            label = this.service + "." + this.operation
           }
+          console.log("name", this.name, "s", this.service, "o", this.operation, "returning", label)
+          return label
         },
         oneditprepare: function () {
           console.log("prep", arguments, this)
@@ -84,7 +92,7 @@
         },
         oneditsave: function() {
           
-          var controls = 'node-input-service,node-input-apiVersion,node-input-operation'.split(",")
+          var controls = 'node-input-name,node-input-service,node-input-apiVersion,node-input-operation'.split(",")
 
           controls.forEach(c => {
             let control = document.getElementById(c)
@@ -106,32 +114,40 @@
 </script>
 
 <script type="text/html" data-template-name="simple-aws">
-	  <div class="form-row">
-		  <label for="node-input-aws"><i class="fa fa-user"></i> AWS Config</label>
-		  <input type="text" id="node-input-aws">
-	  </div>
-    <div class="form-row">
-      <label for="node-input-service"><i class="fa fa-ellipsis-h"></i> Service</label>
-      <select id="node-input-service">
-      </select>
-    </div>
-    <div class="form-row">
-      <label for="node-input-apiVersion"><i class="fa fa-ellipsis-h"></i> API Version</label>
-      <select id="node-input-apiVersion">
-      </select>
-    </div>
-    <div class="form-row">
-      <label for="node-input-operation"><i class="fa fa-ellipsis-h"></i> Operation</label>
-      <select id="node-input-operation">
-      </select>
-    </div>
-    <div class="form-row">
-      <label for="node-input-parameter"><i class="fa fa-ellipsis-h"></i> Parameter</label>
-      <input id="node-input-parameter">
-    </div>
-
+  <div class="form-row">
+    <label for="node-input-aws"><i class="fa fa-globe"></i> AWS Config</label>
+    <input type="text" id="node-input-aws">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input id="node-input-name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-service"><i class="fa fa-tasks"></i> Service</label>
+    <select id="node-input-service">
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-apiVersion"><i class="fa fa-tasks"></i> API Version</label>
+    <select id="node-input-apiVersion">
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-operation"><i class="fa fa-tasks"></i> Operation</label>
+    <select id="node-input-operation">
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-parameter"><i class="fa fa-ellipsis-h"></i> Parameter</label>
+    <input id="node-input-parameter">
+  </div>
+  <div>
+    <label><i class="fa fa-link"></i>
+    <span><a id="docLink" target="_awsdocs" href="https://docs.aws.amazon.com/AWSJavaScriptSDK/latest">AWS Documentation</a></span>
+  </div>
+  
 </script>
 
 <script type="text/html" data-help-name="simple-aws">
-    <p>A simple node that enables you to call AWS Services</p>
+  <p>A simple node that enables you to call AWS Services</p>
 </script>
