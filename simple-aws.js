@@ -6,8 +6,7 @@ module.exports = function(RED) {
         //console.log("config", config)
         RED.nodes.createNode(this, config);
         var node = this;
-		    let awsConfig = RED.nodes.getNode(config.aws);
-         
+		    let awsConfig = RED.nodes.getNode(config.aws); 
         this.region = awsConfig.region
         /*  
         this.parameterType = config.parameterType
@@ -21,15 +20,31 @@ module.exports = function(RED) {
 			    secretAccessKey: awsConfig.secretKey
 		    });
 
-        let serviceParams = {}
+        let serviceOptions = {}
+        try {
+          if ( config.serviceOptions && config.serviceOptions.trim() > 0 ) {
+            serviceOptions = JSON.parse(config.serviceOptions)
+          }
+        } catch (e) {
+          let eMsg = "service options were not valid JSON"
+          node.status({ fill: "red", shape: "ring", text: sMsg })
+          node.error(e, eMsg)
+        }
         if ( config.apiVersion ) {
-          serviceParams.apiVersion = config.apiVersion
+          serviceOptions.apiVersion = config.apiVersion
         }
         if ( this.region ) {
-          serviceParams.region = this.region
+          serviceOptions.region = this.region
         }
-        //console.log("creating new AWS service " + config.service + " with params", serviceParams)
-        let client = new AWS[config.service](serviceParams)
+        //console.log("creating new AWS service " + config.service + " with params", serviceOptions)
+        let client = null
+        try {
+          client = new AWS[config.service](serviceOptions)
+        } catch (e) {
+          let eMsg = "error instantiating AWS service " + config.service + "(" + config.apiVersion + ":" + config.operation + " " + e.message
+          node.status({ fill: "red", shape: "ring", text: eMsg})
+          node.error(e, eMsg);
+        }
 
         /* let's handle the payload parameter */
         let valid = true
@@ -45,7 +60,9 @@ module.exports = function(RED) {
             node.jsonata = RED.util.prepareJSONataExpression(config.parameterType, this);
           } catch(e) {
             valid = false;
-            this.error(RED._("change.errors.invalid-expr",{error:e.message}));
+            let eMsg = "error parsing JSONata expression " + config.service + "(" + config.apiVersion + ":" + config.operation + " " + e.message
+            node.status({ fill: "red", shape: "ring", text: eMsg})
+            node.error(e, eMsg);
           }
         }
 
@@ -65,19 +82,29 @@ module.exports = function(RED) {
         node.on('input', async function(msg, nodeSend, nodeDone) {
           //console.log("message received", msg, "node", node,"send",nodeSend,"done",nodeDone)
           let operationParam = {}
-          switch (config.parameterType) {
-            case 'jsonata' :
-              operationParam = RED.util.evaluateNodeProperty(config.parameter, config.parameterType, node, msg);
-              break
-            case 'msg':
-              operationParam = RED.util.getMessageProperty(msg,config.parameter);
-              break
-            case 'json':
-              operationParam = JSON.parse(config.parameter)
-              break
-            default:
-              throw "unexpected parameterType " + config.parameterType
+          try {
+            switch (config.parameterType) {
+              case 'jsonata' :
+                operationParam = RED.util.evaluateNodeProperty(config.parameter, config.parameterType, node, msg);
+                break
+              case 'msg':
+                operationParam = RED.util.getMessageProperty(msg,config.parameter);
+                break
+              case 'json':
+                operationParam = JSON.parse(config.parameter)
+                break
+              default:
+                throw "Unexpected config parameter type " + config.parameterType
+
+            }
+          } catch (e) {
+            let eMsg = "AWS parameter to " + config.service + ":" + config.operation + " was malformed. " + e.message
+            node.status({ fill: "red", shape: "ring", text: eMsg})
+            node.error(eMsg);
+            node.send([null, eMsg])
+            return
           }
+
           node.status({ fill: "green", shape: "ring", text: "calling " + config.service + ":" + config.operation });
           
           let operationParamCopy = { ... operationParam }
@@ -88,24 +115,24 @@ module.exports = function(RED) {
 
             while (!done) {
               var response = await client[config.operation](operationParamCopy).promise()
-              //console.log("response", response)
               msgCopy.payload = response
-              //console.log("paginator", paginatorDef)
               if ( paginatorDef && response[paginatorDef.output_token]) {
+                console.log(`paginating ${config.service}:${config.operation} on ${paginatorDef.output_token}`)
                 operationParamCopy[paginatorDef.input_token] = response[paginatorDef.output_token]
                 delete msgCopy.complete
-                node.send(msgCopy)
+                node.send([msgCopy, null])
               } else {
                 done = true
                 msgCopy.complete = true
                 node.status({ fill: "green", shape: "ring", text: "done" });
-                node.send(msgCopy)
+                node.send([msgCopy, null])
                 nodeDone()
               }
             }
           } catch (err) {
             node.status({ fill: "red", shape: "ring", text: err });
             node.error(err, "error calling " + config.operation + ": " + err);
+            node.send([null, err.message])
           }
         });
     }

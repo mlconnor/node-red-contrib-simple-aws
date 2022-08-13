@@ -52,13 +52,15 @@
           aws: {type:"AWS Config",required:true},
           name: {value:"",required:false},
           service: {value:"S3",required:true},
+          serviceOptions: { value: "{}", required: true },
           operation: {value:"listObjectsV2", required:true},
           apiVersion: {value:"2006-03-01", required:true},
           parameter: {value:{"Bucket":"INSERT_BUCKET_NAME_HERE"}, required:true},
           parameterType: {value:"jsonata", required:true}
         },
         inputs:1,
-        outputs:1,
+        outputs:2,
+        outputLabels: ["success","error"],
         label: function() {
           let label = "Simple AWS"
           if ( this.name && this.name.trim().length > 0 ) {
@@ -83,6 +85,10 @@
             types:['msg','json','jsonata']
           }).typedInput('type',this.parameterType);
 
+          $("#node-input-serviceOptions").typedInput({
+            types:['json'], this.serviceOptions
+          })
+
           /* https://nodered.org/docs/creating-nodes/resources */
           /*
           $.getJSON('/resources/node-red-contrib-simple-aws/paginators.json',function(data) {
@@ -92,7 +98,7 @@
         },
         oneditsave: function() {
           
-          var controls = 'node-input-name,node-input-service,node-input-apiVersion,node-input-operation'.split(",")
+          var controls = 'node-input-name,node-input-service,node-input-serviceOptions,node-input-apiVersion,node-input-operation'.split(",")
 
           controls.forEach(c => {
             let control = document.getElementById(c)
@@ -127,6 +133,10 @@
     <label for="node-input-apiVersion"><i class="fa fa-tasks"></i> API Version</label>
     <select id="node-input-apiVersion">
     </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-serviceOptions"><i class="fa fa-tasks"></i> Service Options</label>
+    <input id="node-input-serviceOptions">
   </div>
   <div class="form-row">
     <label for="node-input-operation"><i class="fa fa-tasks"></i> Operation</label>
