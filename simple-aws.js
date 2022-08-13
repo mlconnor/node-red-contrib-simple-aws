@@ -116,8 +116,8 @@ module.exports = function(RED) {
             while (!done) {
               var response = await client[config.operation](operationParamCopy).promise()
               msgCopy.payload = response
-              if ( paginatorDef && response[paginatorDef.output_token]) {
-                console.log(`paginating ${config.service}:${config.operation} on ${paginatorDef.output_token}`)
+              if ( config.paging !== 'disabled' && paginatorDef && response[paginatorDef.output_token]) {
+                //console.log(`paginating ${config.service}:${config.operation} on ${paginatorDef.output_token}`)
                 operationParamCopy[paginatorDef.input_token] = response[paginatorDef.output_token]
                 delete msgCopy.complete
                 node.send([msgCopy, null])
