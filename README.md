@@ -28,6 +28,18 @@ You can then configure the properties of the node the way you would with any oth
 
 ![Properties](https://github.com/mlconnor/node-red-contrib-simple-aws/blob/master/doc/properties.png?raw=true)
 
+# Error handling
+
+Error handling is important when working with AWS services, or any other remote system. You will likely want your flow to take a different path in the event that there's an error. An example would be showing an error page, or doing a retry with a delay if something fails. For that reason, the Simple AWS node has two output ports. The top port is the success port and the bottom port is the error port. When an error occurs, you can direct the flow to handle it in a way that supports your use case. When an error message is emitted, the msg will have the exact same payload that came into the node so that you can loop and retry if you so choose. An additional property called **error** is added to the msg that contains the exception and a property called **errorMsg** is also added with descriptive text.
+
+Also keep in mind that the AWS SDK has built in [retry logic](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#maxRetries-property). In many cases, the AWS SDK will retry a failed operation a few times before giving up. Please consider how you configure that in the SDK and how this logic interacts with your own retry logic.
+
+The diagram below shows a simple retry loop with a 5 second delay that will continue indefinitely until it succeeds.
+
+![Error handling](https://github.com/mlconnor/node-red-contrib-simple-aws/blob/master/doc/errorHandling.png?raw=true)
+
+# Configuration
+
 The **AWS Config** property gives you a way to configure your region and credentials as you can see below. Each instance of the node can have a different set of credentials and run in different regions so it gives you a lot of flexibility.
 
 ![Config](https://github.com/mlconnor/node-red-contrib-simple-aws/blob/master/doc/config.png?raw=true)
@@ -42,11 +54,17 @@ The **Service** parameter is for the service that you want to choose such as S3,
 ### API Version
 The **API Version** is important and gives you the ability to lock down the API version. Sometimes AWS can change this as the service evolves and without this setting, it could break your flow.
 
+### Serice Options
+Some services (like DynamoDB) have a rich set of options that can be configured at the service level. This is done with an object and if you need to take advantage of those configurations, this is the place to do it. In most cases, this will simply be an empty object (the default) set to {}.
+
 ### Operation
 The operation is the method you want to call. For S3, you might choose something like listObjectsV2.
 
 ### Parameter
 All AWS functions take a single parameter and return a single result. The **parameter** property gives you the ability to set that. I give you a few different ways to do that using the useful Node Red property editing capabilities. You can set a JSON value if the parameter is always the same, or you can use a JSONata expression which is what you'll do most often. Here is an example.
+
+### Paging
+Some of the operations like **S3.listObjectsV2** have the concept of paging. When you call **listObjectsV2**, you can give it a MaxKeys property to limit the results. If you don't set that value, the AWS SDK will use a default limit to prevent a massive amount of data from coming back unexpectedly. When the results are truncated, the AWS SDK will tell you so, and give you a Continuation Token to get the next batch of results. This is similar to a cursor on a database. The paging parameter gives you an opportunity to control how that works. If you set this to **disabled**, Continuation Tokens will be ignored. When set to **enabled - new message per page**, the node will make subsequent calls to fetch additional pages. When this happens, a new message will be emitted for each page. To collect all of this information and process it all at once, you will need to use a **join** node with the message id as the topic. In an upcoming release, we will also give you the ability to limit the total number of pages and also simply return all of the messages at once.
 
 ![JSONata property](doc/jsonata.png)
 

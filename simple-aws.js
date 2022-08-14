@@ -82,6 +82,7 @@ module.exports = function(RED) {
         node.on('input', async function(msg, nodeSend, nodeDone) {
           //console.log("message received", msg, "node", node,"send",nodeSend,"done",nodeDone)
           let operationParam = {}
+          let msgCopy = { ...msg }
           try {
             switch (config.parameterType) {
               case 'jsonata' :
@@ -99,9 +100,11 @@ module.exports = function(RED) {
             }
           } catch (e) {
             let eMsg = "AWS parameter to " + config.service + ":" + config.operation + " was malformed. " + e.message
+            msgCopy.error = e
+            msgCopy.errorMsg = eMsg
             node.status({ fill: "red", shape: "ring", text: eMsg})
             node.error(eMsg);
-            node.send([null, eMsg])
+            node.send([null, msgCopy])
             return
           }
 
@@ -111,7 +114,7 @@ module.exports = function(RED) {
 
           try {
             let done = false
-            let msgCopy = { ...msg }
+
 
             while (!done) {
               var response = await client[config.operation](operationParamCopy).promise()
@@ -129,10 +132,13 @@ module.exports = function(RED) {
                 nodeDone()
               }
             }
-          } catch (err) {
-            node.status({ fill: "red", shape: "ring", text: err });
-            node.error(err, "error calling " + config.operation + ": " + err);
-            node.send([null, err.message])
+          } catch (e) {
+            let eMsg = `Error while calling ${config.service}:${config.operation} ${e.message}`
+            msgCopy.error = e
+            msgCopy.errorMsg = eMsg
+            node.status({ fill: "red", shape: "ring", text: e });
+            node.error(e, `error calling ${config.service}:${config.operation} ${e}`);
+            node.send([null, msgCopy])
           }
         });
     }
