@@ -3,7 +3,7 @@
   "version": "0.1.6",
   "description": "A simple wrapper for all AWS services",
   "dependencies": {
-    "aws-sdk": "^2.1189.0"
+    "aws-sdk": "^2.1572.0"
   },
   "repository": {
     "type": "git",
