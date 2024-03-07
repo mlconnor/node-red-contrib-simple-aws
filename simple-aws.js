@@ -6,7 +6,7 @@ module.exports = function(RED) {
         //console.log("config", config)
         RED.nodes.createNode(this, config);
         var node = this;
-		    let awsConfig = RED.nodes.getNode(config.aws); 
+        let awsConfig = RED.nodes.getNode(config.aws); 
         this.region = awsConfig.region
         /*  
         this.parameterType = config.parameterType
@@ -15,10 +15,10 @@ module.exports = function(RED) {
         this.service = config.service
         this.aws = config.aws
         */
-		    AWS.config.update({
-			    accessKeyId: awsConfig.accessKey,
-			    secretAccessKey: awsConfig.secretKey
-		    });
+        AWS.config.update({
+          accessKeyId: awsConfig.accessKey,
+          secretAccessKey: awsConfig.secretKey
+        });
 
         let serviceOptions = {}
         try {
@@ -86,7 +86,16 @@ module.exports = function(RED) {
           try {
             switch (config.parameterType) {
               case 'jsonata' :
-                operationParam = RED.util.evaluateNodeProperty(config.parameter, config.parameterType, node, msg);
+                operationParam = await new Promise((resolve, reject) => {
+                  RED.util.evaluateNodeProperty(config.parameter, config.parameterType, node, msg, (err, result) => {
+                    console.log("in promise", err, result)
+                    if ( err ) {
+                      reject(err)
+                    } else {
+                      resolve(result)
+                    }
+                  })
+                })
                 break
               case 'msg':
                 operationParam = RED.util.getMessageProperty(msg,config.parameter);
@@ -96,7 +105,6 @@ module.exports = function(RED) {
                 break
               default:
                 throw "Unexpected config parameter type " + config.parameterType
-
             }
           } catch (e) {
             let eMsg = "AWS parameter to " + config.service + ":" + config.operation + " was malformed. " + e.message
@@ -114,7 +122,6 @@ module.exports = function(RED) {
 
           try {
             let done = false
-
 
             while (!done) {
               var response = await client[config.operation](operationParamCopy).promise()
@@ -144,4 +151,3 @@ module.exports = function(RED) {
     }
     RED.nodes.registerType("simple-aws",SimpleAWSNode);
 }
-
